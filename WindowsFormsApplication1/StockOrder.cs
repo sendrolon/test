@@ -24,6 +24,7 @@ namespace WindowsFormsApplication1
         public Dictionary<string, List<OrderSeq>> mSellSplits = new Dictionary<string, List<OrderSeq>>();
         public Dictionary<string, List<OrderSeq>> mTractorOrders = new Dictionary<string, List<OrderSeq>>();
         public Dictionary<string, List<OrderSeq>> mSellTractorOrders = new Dictionary<string, List<OrderSeq>>();
+        public int mScore = 0;
 
         public StockOrder(string name, DateTime time)
         {
@@ -137,6 +138,7 @@ namespace WindowsFormsApplication1
                                     this.mTractorOrders.Add(seq_name, new List<OrderSeq>());
                                 }
                                 this.mTractorOrders[seq_name].Add(os);
+                                this.mScore += sub.Count / 2;
                                 found = true;
                                 break;
                             }
@@ -177,6 +179,9 @@ namespace WindowsFormsApplication1
                                     this.mBuySplits.Add(seq_name,new List<OrderSeq>());
                                 }
                                 this.mBuySplits[seq_name].Add(os);
+
+                                this.mScore += sub.Count/2;
+
                                 found = true;
                                 break;
                             }                            
@@ -296,6 +301,8 @@ namespace WindowsFormsApplication1
                                             Debug.WriteLine("test");
                                         if (mos.mTime == os.mTime)
                                             continue;
+                                        if (mos.Mark)
+                                            continue;
                                         if (Toolbox.SeqContains(mos.mSeqs, sample) >= 0)
                                         {
                                             // Debug.WriteLine("Found!!!");
@@ -309,10 +316,14 @@ namespace WindowsFormsApplication1
                                             {
                                                 foundSellOrders.Add(sname, new List<OrderSeq>());
                                                 foundSellOrders[sname].Add(os);
+                                                os.Mark = true;
 
                                             }
+                                            mos.Mark = true;
                                             mos.chooseLevel = sample.Count;
                                             foundSellOrders[sname].Add(mos);
+
+                                            
                                         }
 
                                     }
@@ -404,6 +415,17 @@ namespace WindowsFormsApplication1
                                             }
                                             mos.chooseLevel = sample.Count;
                                             foundBuyOrders[sname].Add(mos);
+                                            if (this.name == "601398")
+                                                Debug.WriteLine("test");
+                                            if (sample.Sum() % 1000 == 0 || sample.Sum() % 1000 == 1 || sample.Sum() % 1000 == 9)
+                                            {
+                                                this.mScore += sample.Count * 3 / 2;
+                                            }
+                                            else if (sample.Sum() % 100 == 0 || sample.Sum() % 100 == 1 || sample.Sum() % 100 == 9)
+                                            {
+                                                this.mScore += sample.Count;
+                                            }
+                                            this.mScore += sample.Count;
                                         }
 
                                     }

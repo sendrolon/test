@@ -7,6 +7,22 @@ using System.Threading.Tasks;
 namespace WindowsFormsApplication1
 {
 
+    public class StockScoreCompair : IComparer<StockOrder>
+    {
+
+        public int Compare(StockOrder x, StockOrder y)
+        {
+            if (x.mScore == y.mScore)
+                return 0;
+            if (x.mScore > y.mScore)
+                return 1;
+            if (x.mScore < y.mScore)
+                return -1;
+
+            return 0;
+        }
+    }
+
     public class OrderAboutEqual : IEqualityComparer<long>
     {
     

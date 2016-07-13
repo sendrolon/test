@@ -15,6 +15,7 @@ namespace WindowsFormsApplication1
         public StockDirection direction;
         public OrderSeq mOriginalSeq = null;
         public int chooseLevel = 0;
+        public Boolean Mark = false;
 
         public OrderSeq()
         {

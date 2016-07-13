@@ -19,6 +19,111 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
         }
+        List<StockOrder> goodStock = new List<StockOrder>();
+
+        private void outputGoodStock(StreamWriter sw, StreamWriter sw_sell, StreamWriter sw_rich)
+        {
+            
+            goodStock.Sort(new StockScoreCompair());
+            goodStock.Reverse();
+            foreach (StockOrder stock in goodStock)
+            {
+                Boolean printHead = false;
+
+
+                foreach (string key in stock.foundBuyOrders.Keys)
+                {
+                    List<long> parseKey = Toolbox.ParseKeys(key);
+                    if (parseKey == null)
+                        continue;
+                    if (parseKey.Count == 2 && stock.foundBuyOrders[key].Count == 2 && !Limits.Exact)
+                        continue;
+                    if (!printHead)
+                    {
+                        Debug.WriteLine("found valuable info for " + stock.name);
+                        sw.WriteLine("===============");
+                        sw.WriteLine("stock name=" + stock.name + "  Score=" + stock.mScore.ToString());
+
+                        sw_rich.WriteLine("===============");
+                        sw_rich.WriteLine("stock name=" + stock.name + "  Score=" + stock.mScore.ToString());
+                        printHead = true;
+                    }
+                    if (parseKey.Sum() % 10 == 0 || parseKey.Sum() % 10 == 1 || parseKey.Sum() % 10 == 9)
+                    {
+                        Debug.WriteLine("*************");
+                        sw.WriteLine("*************");
+                        sw_rich.WriteLine("*************");
+                        if (parseKey.Sum() % 100 == 0 || parseKey.Sum() % 100 == 1 || parseKey.Sum() % 100 == 9)
+                        {
+                            sw.WriteLine("$$$$$$$$$$$$$$$");
+                            sw_rich.WriteLine("$$$$$$$$$$$$$$$");
+                            if (parseKey.Sum() % 1000 == 0 || parseKey.Sum() % 1000 == 1 || parseKey.Sum() % 1000 == 9)
+                            {
+                                sw.WriteLine("@@@@@@@@@@@@@");
+                                sw_rich.WriteLine("@@@@@@@@@@@@@");
+                            }
+                        }
+                    }
+                    Debug.WriteLine("sec " + key + "  found:");
+                    sw.WriteLine("serial is: " + key);
+                    sw_rich.WriteLine("serial is: " + key);
+
+                    foreach (OrderSeq os in stock.foundBuyOrders[key])
+                    {
+                        Debug.WriteLine("Time:" + os.mTime + "    Price:" + os.mPrice.ToString());
+                        sw.WriteLine("Time:" + os.mTime + "    Price:" + os.mPrice.ToString());
+                        sw_rich.WriteLine("Time:" + os.mTime + "    Price:" + os.mPrice.ToString());
+                    }
+                }
+
+                foreach (string key in stock.mTractorOrders.Keys)
+                {
+                    if (!printHead)
+                    {
+                        Debug.WriteLine("found valuable info for " + stock.name);
+                        sw_rich.WriteLine("===============");
+                        sw_rich.WriteLine("stock name=" + stock.name + "  Score=" + stock.mScore.ToString());
+                        printHead = true;
+                    }
+                    sw_rich.WriteLine("-------------------------");
+                    sw_rich.WriteLine("Tractor seqs : " + key);
+                    foreach (OrderSeq os in stock.mTractorOrders[key])
+                    {
+                        sw_rich.WriteLine("Time:" + os.mTime + "    Price:" + os.mPrice.ToString());
+                    }
+                    sw_rich.WriteLine("-------------------------");
+                }
+
+                foreach (string key in stock.mBuySplits.Keys)
+                {
+                    if (!printHead)
+                    {
+                        Debug.WriteLine("found valuable info for " + stock.name);
+                        sw_rich.WriteLine("===============");
+                        sw_rich.WriteLine("stock name=" + stock.name + "  Score=" + stock.mScore.ToString());
+                        printHead = true;
+                    }
+
+                    sw_rich.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~");
+                    sw_rich.WriteLine("Entirly split orders:" + key);
+                    foreach (OrderSeq os in stock.mBuySplits[key])
+                        sw_rich.WriteLine("Time:" + os.mTime + "    Price:" + os.mPrice.ToString());
+                    sw_rich.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~");
+                }
+
+                if (printHead)
+                {
+                    Debug.WriteLine("==========================");
+                    sw.WriteLine("====================");
+                    sw.WriteLine();
+
+                    sw_rich.WriteLine("====================");
+                    sw_rich.WriteLine();
+                }
+            }
+
+        }
+
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -56,9 +161,13 @@ namespace WindowsFormsApplication1
                 GC.Collect();
 
             }
+            outputGoodStock(sw, sw_sell, sw_rich);
             sw.Close();
             sw_sell.Close();
             sw_rich.Close();
+
+
+
             DateTime end = DateTime.Now;
             MessageBox.Show("Completed! cost:" + (end - start).TotalSeconds.ToString());
         }
@@ -114,6 +223,8 @@ namespace WindowsFormsApplication1
                 if (stock.foundBuyOrders.Count != 0 || stock.mTractorOrders.Count != 0 || stock.mBuySplits.Count != 0)
                 {
                     Boolean printHead = false;
+                    this.goodStock.Add(stock);
+                    continue;
 
                     foreach (string key in stock.foundBuyOrders.Keys)
                     {
@@ -165,8 +276,6 @@ namespace WindowsFormsApplication1
                         if (!printHead)
                         {
                             Debug.WriteLine("found valuable info for " + stock.name);
-                            sw.WriteLine("===============");
-                            sw.WriteLine("stock name=" + stock.name);
                             sw_rich.WriteLine("===============");
                             sw_rich.WriteLine("stock name=" + stock.name);
                             printHead = true;
@@ -185,8 +294,6 @@ namespace WindowsFormsApplication1
                         if (!printHead)
                         {
                             Debug.WriteLine("found valuable info for " + stock.name);
-                            sw.WriteLine("===============");
-                            sw.WriteLine("stock name= " + stock.name);
                             sw_rich.WriteLine("===============");
                             sw_rich.WriteLine("stock name=" + stock.name);
                             printHead = true;
