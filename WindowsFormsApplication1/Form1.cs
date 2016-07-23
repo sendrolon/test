@@ -15,9 +15,21 @@ namespace WindowsFormsApplication1
     public partial class Form1 : Form
     {
         public List<string> mExactStocks = new List<string>();
+        public List<string> mBlackList = new List<string>();
+
+        public void initBlackList()
+        {
+            StreamReader sr = new StreamReader("blacklist.txt");
+            while (!sr.EndOfStream)
+            {
+                mBlackList.Add(sr.ReadLine());
+            }
+            sr.Close();
+        }
         public Form1()
         {
             InitializeComponent();
+            initBlackList();
         }
         List<StockOrder> goodStock = new List<StockOrder>();
 
@@ -26,6 +38,7 @@ namespace WindowsFormsApplication1
             
             goodStock.Sort(new StockScoreCompair());
             goodStock.Reverse();
+            //goodStock.Sort(new StockNameCompair());
             foreach (StockOrder stock in goodStock)
             {
                 Boolean printHead = false;
@@ -36,7 +49,8 @@ namespace WindowsFormsApplication1
                     List<long> parseKey = Toolbox.ParseKeys(key);
                     if (parseKey == null)
                         continue;
-                    if (parseKey.Count == 2 && stock.foundBuyOrders[key].Count == 2 && !Limits.Exact)
+                    int rank = Toolbox.RankOrder(parseKey);
+                    if (rank<2 && parseKey.Count == 2 && stock.foundBuyOrders[key].Count == 2 && !Limits.Exact)
                         continue;
                     if (!printHead)
                     {
@@ -44,26 +58,30 @@ namespace WindowsFormsApplication1
                         sw.WriteLine("===============");
                         sw.WriteLine("stock name=" + stock.name + "  Score=" + stock.mScore.ToString());
 
+                        if (stock.mBuySplitAvePrice >= stock.getLastPrice())
+                        {
+                            sw.WriteLine(">>>>>>>>>>>>>Main force Trapped :)");
+                            sw_rich.WriteLine(">>>>>>>>>>>>>>Main force Trapped :)");
+                        }
+
                         sw_rich.WriteLine("===============");
                         sw_rich.WriteLine("stock name=" + stock.name + "  Score=" + stock.mScore.ToString());
                         printHead = true;
                     }
-                    if (parseKey.Sum() % 10 == 0 || parseKey.Sum() % 10 == 1 || parseKey.Sum() % 10 == 9)
+
+                    
+                    if (rank == 3)
                     {
-                        Debug.WriteLine("*************");
-                        sw.WriteLine("*************");
-                        sw_rich.WriteLine("*************");
-                        if (parseKey.Sum() % 100 == 0 || parseKey.Sum() % 100 == 1 || parseKey.Sum() % 100 == 9)
-                        {
-                            sw.WriteLine("$$$$$$$$$$$$$$$");
-                            sw_rich.WriteLine("$$$$$$$$$$$$$$$");
-                            if (parseKey.Sum() % 1000 == 0 || parseKey.Sum() % 1000 == 1 || parseKey.Sum() % 1000 == 9)
-                            {
-                                sw.WriteLine("@@@@@@@@@@@@@");
-                                sw_rich.WriteLine("@@@@@@@@@@@@@");
-                            }
-                        }
+                        sw.WriteLine("@@@@@@@@@@@@@");
+                        sw_rich.WriteLine("@@@@@@@@@@@@@");
                     }
+                    else if (rank == 2)
+                    {
+                        sw.WriteLine("$$$$$$$$$$$$$$$");
+                        sw_rich.WriteLine("$$$$$$$$$$$$$$$");
+                    }
+
+                    
                     Debug.WriteLine("sec " + key + "  found:");
                     sw.WriteLine("serial is: " + key);
                     sw_rich.WriteLine("serial is: " + key);
@@ -93,6 +111,8 @@ namespace WindowsFormsApplication1
                     }
                     sw_rich.WriteLine("-------------------------");
                 }
+                if (stock.mBuySplits.Count != 0)
+                    sw_rich.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~");
 
                 foreach (string key in stock.mBuySplits.Keys)
                 {
@@ -104,7 +124,6 @@ namespace WindowsFormsApplication1
                         printHead = true;
                     }
 
-                    sw_rich.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~");
                     sw_rich.WriteLine("Entirly split orders:" + key);
                     foreach (OrderSeq os in stock.mBuySplits[key])
                         sw_rich.WriteLine("Time:" + os.mTime + "    Price:" + os.mPrice.ToString());
@@ -146,7 +165,7 @@ namespace WindowsFormsApplication1
             DialogResult result = of.ShowDialog();
             if (result != System.Windows.Forms.DialogResult.OK)
                 return;
-            string out_filename = DateTime.Today.ToString("MM-dd-") + DateTime.Today.Ticks.ToString() + ".txt";
+            string out_filename = DateTime.Today.ToString("MM-dd-") + DateTime.Now.ToFileTimeUtc() + ".txt";
             StreamWriter sw = new StreamWriter(out_filename);
             StreamWriter sw_sell = new StreamWriter("SELL_" + out_filename);
             StreamWriter sw_rich = new StreamWriter("Rich_" + out_filename);
@@ -185,8 +204,10 @@ namespace WindowsFormsApplication1
                 {
                     string[] materials = line.Split('=');
                     string name;
+                    
                     if (!Toolbox.GetStockCode(materials[0], out name, DataType.TCP))
                         continue;
+                    
                     if (!name.StartsWith(initial))
                         continue;
                     if (Limits.Exact)
@@ -217,9 +238,14 @@ namespace WindowsFormsApplication1
             
             foreach (StockOrder stock in stocks.Values)
             {
-                stock.FoundBuy();
+                if (mBlackList.Contains(stock.name))
+                    continue;
+                //stock.FoundBuy();
                 stock.FoundBuySplitSingle();
                 stock.FoundTractorsOrders();
+                stock.TrimOrders();
+                stock.findbuy2();
+                stock.TrimGarbageOrder(Limits.Exact);
                 if (stock.foundBuyOrders.Count != 0 || stock.mTractorOrders.Count != 0 || stock.mBuySplits.Count != 0)
                 {
                     Boolean printHead = false;
@@ -271,6 +297,9 @@ namespace WindowsFormsApplication1
                         }
                     }
 
+                    if (stock.mTractorOrders.Count != 0)
+                        sw_rich.WriteLine("-------------------------");
+
                     foreach (string key in stock.mTractorOrders.Keys)
                     {
                         if (!printHead)
@@ -280,7 +309,6 @@ namespace WindowsFormsApplication1
                             sw_rich.WriteLine("stock name=" + stock.name);
                             printHead = true;
                         }
-                        sw_rich.WriteLine("-------------------------");
                         sw_rich.WriteLine("Tractor seqs : " + key);
                         foreach (OrderSeq os in stock.mTractorOrders[key])
                         {
@@ -288,6 +316,9 @@ namespace WindowsFormsApplication1
                         }
                         sw_rich.WriteLine("-------------------------");
                     }
+
+                    if (stock.mBuySplits.Count != 0)
+                        sw_rich.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~");
 
                     foreach (string key in stock.mBuySplits.Keys)
                     {
@@ -299,7 +330,6 @@ namespace WindowsFormsApplication1
                             printHead = true;
                         }
 
-                        sw_rich.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~");
                         sw_rich.WriteLine("Entirly split orders:" + key);
                         foreach(OrderSeq os in stock.mBuySplits[key])
                             sw_rich.WriteLine("Time:" + os.mTime + "    Price:" + os.mPrice.ToString());
@@ -323,9 +353,10 @@ namespace WindowsFormsApplication1
             {
                 foreach (StockOrder stock in stocks.Values)
                 {
-                    stock.FoundSell();
+                    //stock.FoundSell();
                     stock.FoundSellSplitSingle();
                     stock.FoundSellTractorOrders();
+                    stock.findsell2();
                     if (stock.foundSellOrders.Count != 0)
                     {
                         Boolean printHead = false;
@@ -333,9 +364,10 @@ namespace WindowsFormsApplication1
                         foreach (string key in stock.foundSellOrders.Keys)
                         {
                             List<long> parseKey = Toolbox.ParseKeys(key);
+                            int rank = Toolbox.RankOrder(parseKey);
                             if (parseKey == null)
                                 continue;
-                            if (parseKey.Count == 2 && stock.foundSellOrders[key].Count == 2 && !Limits.Exact)
+                            if (rank<2 && parseKey.Count == 2 && stock.foundSellOrders[key].Count == 2 && !Limits.Exact)
                                 continue;
                             if (!printHead)
                             {
@@ -344,19 +376,19 @@ namespace WindowsFormsApplication1
                                 sw_sell.WriteLine("stock name=" + stock.name);
                                 printHead = true;
                             }
-                            if (parseKey.Sum() % 10 == 0 || parseKey.Sum() % 10 == 1 || parseKey.Sum() % 10 == 9)
+
+                            
+                            if (rank == 3)
                             {
-                                Debug.WriteLine("*************");
-                                sw_sell.WriteLine("*************");
-                                if (parseKey.Sum() % 100 == 0 || parseKey.Sum() % 100 == 1 || parseKey.Sum() % 100 == 9)
-                                {
-                                    sw_sell.WriteLine("$$$$$$$$$$$$$$$");
-                                    if (parseKey.Sum() % 1000 == 0 || parseKey.Sum() % 1000 == 1 || parseKey.Sum() % 1000 == 9)
-                                    {
-                                        sw_sell.WriteLine("@@@@@@@@@@@@@");
-                                    }
-                                }
+                                sw.WriteLine("@@@@@@@@@@@@@");
+                                sw_rich.WriteLine("@@@@@@@@@@@@@");
                             }
+                            else if (rank == 2)
+                            {
+                                sw.WriteLine("$$$$$$$$$$$$$$$");
+                                sw_rich.WriteLine("$$$$$$$$$$$$$$$");
+                            }
+
                             Debug.WriteLine("sec " + key + "  found:");
                             sw_sell.WriteLine("serial is:" + key);
 
@@ -367,6 +399,8 @@ namespace WindowsFormsApplication1
                             }
                         }
 
+                        if (stock.mSellTractorOrders.Count != 0)
+                            sw_sell.WriteLine("-------------------------");
 
                         foreach (string key in stock.mSellTractorOrders.Keys)
                         {
@@ -377,7 +411,6 @@ namespace WindowsFormsApplication1
                                 sw_sell.WriteLine("stock name=" + stock.name);
                                 printHead = true;
                             }
-                            sw_sell.WriteLine("-------------------------");
                             sw_sell.WriteLine("Tractor seqs :" + key);
                             foreach (OrderSeq os in stock.mSellTractorOrders[key])
                             {
@@ -385,7 +418,8 @@ namespace WindowsFormsApplication1
                             }
                             sw_sell.WriteLine("-------------------------");
                         }
-
+                        if (stock.mSellSplits.Count != 0)
+                            sw_sell.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~");
                         foreach (string key in stock.mSellSplits.Keys)
                         {
                             if (!printHead)
@@ -396,7 +430,7 @@ namespace WindowsFormsApplication1
                                 printHead = true;
                             }
 
-                            sw_sell.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~");
+                            
                             sw_sell.WriteLine("Entirly split orders:" + key);
                             foreach (OrderSeq os in stock.mSellSplits[key])
                                 sw_sell.WriteLine("Time:" + os.mTime + "    Price:" + os.mPrice.ToString());

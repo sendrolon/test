@@ -6,6 +6,25 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApplication1
 {
+    public class StockNameCompair : IComparer<StockOrder>
+    {
+
+        public int Compare(StockOrder x, StockOrder y)
+        {
+            //throw new NotImplementedException();
+            return string.Compare(x.name, y.name);
+        }
+    }
+
+    public class OrderTimeCompair : IComparer<OrderSeq>
+    {
+
+        public int Compare(OrderSeq x, OrderSeq y)
+        {
+            //throw new NotImplementedException();
+            return string.Compare(x.mTime, y.mTime);
+        }
+    }
 
     public class StockScoreCompair : IComparer<StockOrder>
     {
@@ -49,6 +68,14 @@ namespace WindowsFormsApplication1
         public Toolbox()
         { }
 
+
+        public static int GetFallBackNums(int seq_order_nums)
+        {
+            if (seq_order_nums <= 25)
+                return 1;
+            return 2;
+        }
+
         public static Boolean JudgeSplitSeq(List<long> seq)
         {
             long sum = seq.Sum();
@@ -57,6 +84,37 @@ namespace WindowsFormsApplication1
             else
                 return false;
         }
+
+        public static Boolean isCloseTime(string tstring0, string tsting1)
+        {
+            string[] t0 = tstring0.Split(':');
+            string[] t1 = tsting1.Split(':');
+            if (t0.Length != 3 || t1.Length != 3)
+                return false;
+            t0[2] = t0[2].Substring(0, 2);
+            t1[2] = t1[2].Substring(0, 2);
+
+            TimeSpan ts0 = new TimeSpan(Convert.ToInt32(t0[0]), Convert.ToInt32(t0[1]), Convert.ToInt32(t0[2]));
+            TimeSpan ts1 = new TimeSpan(Convert.ToInt32(t1[0]), Convert.ToInt32(t1[1]), Convert.ToInt32(t1[2]));
+
+            TimeSpan tsdelta = ts1 - ts0;
+
+            if (tsdelta.TotalSeconds <= 120)
+                return true;
+
+            return false;
+        }
+
+        public static Boolean isTwoGarbages(OrderSeq os0, OrderSeq os1)
+        {
+            if (os0.mPrice == os1.mPrice)
+            {
+                if (isCloseTime(os0.mTime, os1.mTime))
+                    return true;
+            }
+            return false;
+        }
+
 
         public static Boolean isTractorSeq(List<long> seq)
         {
@@ -227,7 +285,7 @@ namespace WindowsFormsApplication1
         {
             if (s1.Count > s0.Count || s1.Count == 0)
                 return -1;
-            if (s1.Count >= 3)
+            if (s1.Count >= 3 || Toolbox.RankOrder(s1) >=2)
                 return Toolbox.SeqContains2(s0, s1);
             int start = -1;
             Boolean found = false;
@@ -302,7 +360,7 @@ namespace WindowsFormsApplication1
                 try
                 {
                     long l = Convert.ToInt64(ls);
-                    ret.Add(l);
+                    ret.Add(l*100);
                 }
                 catch (Exception err)
                 {
@@ -310,6 +368,51 @@ namespace WindowsFormsApplication1
                 }
             }
             return ret;
+        }
+
+        public static int RankOrder(List<long> list)
+        {
+            Boolean odd = allOdd(list);
+            int level = 0;
+            if (wholeJudge(list, 100000))
+                level = 3;
+            else if (wholeJudge(list, 10000))
+                level = 2;
+            else
+                level = 0;
+            if (odd)
+            {
+                if (level != 0)
+                    return level;
+                else
+                    return 1;
+            }
+            else
+            {
+                if (level != 0)
+                    return 1;
+                else
+                    return 0;
+            }
+            
+        }
+
+        public static Boolean wholeJudge(List<long> list, long whole)
+        {
+            if (list.Sum() % whole == 0 || list.Sum() % whole == 1 || (list.Sum() + 1) % whole == 0)
+                return true;
+            return false;
+        }
+
+        public static Boolean allOdd(List<long> list)
+        {
+            foreach (long l in list)
+            {
+                if (l % 1000 == 0)
+                    return false;
+            }
+            return true;
+
         }
     }
 

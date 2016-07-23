@@ -24,13 +24,94 @@ namespace WindowsFormsApplication1
         public Dictionary<string, List<OrderSeq>> mSellSplits = new Dictionary<string, List<OrderSeq>>();
         public Dictionary<string, List<OrderSeq>> mTractorOrders = new Dictionary<string, List<OrderSeq>>();
         public Dictionary<string, List<OrderSeq>> mSellTractorOrders = new Dictionary<string, List<OrderSeq>>();
+
+        public List<OrderSeq> mAllBuyOrders = new List<OrderSeq>();
+        public List<OrderSeq> mAllSellOrders = new List<OrderSeq>();
         public int mScore = 0;
+
+        public double mBuySplitAvePrice = 0;
+
+        //public Boolean WorthOutput(Boolean isExact)
+        //{
+        //    if (isExact)
+        //        return true;
+        //    Boolean worth = false;
+        //    foreach (string key in mBuySplits.Keys)
+        //    {
+        //        if (mBuySplits[key].Count == 2)
+        //    }
+ 
+        //}
+
+        public void TrimGarbageOrder(Boolean isExact)
+        {
+            if (isExact)
+                return;
+            List<string> garbages = new List<string>();
+            if (name == "002376")
+                Debug.WriteLine("test");
+            foreach (string key in foundBuyOrders.Keys)
+            {
+                if (foundBuyOrders[key].Count >= 4)
+                    continue;
+                List<OrderSeq> orders = foundBuyOrders[key];
+                List<OrderSeq> garbageorders = new List<OrderSeq>();
+                for (int i = 1; i < orders.Count; i++)
+                {
+                    if (Toolbox.isTwoGarbages(orders[i-1], orders[i]))
+                    {
+                        garbageorders.Add(orders[i]);
+                    }
+                }
+                foreach (OrderSeq os in garbageorders)
+                {
+                    orders.Remove(os);
+                }
+                if (orders.Count <= 1)
+                    garbages.Add(key);
+            }
+            foreach (string key in garbages)
+            {
+                foundBuyOrders.Remove(key);
+            }
+        }
+
+        public double getLastPrice()
+        {
+            if (mAllBuyOrders.Count != 0)
+                return mAllBuyOrders[mAllBuyOrders.Count - 1].mPrice;
+            else
+                return 0;
+        }
 
         public StockOrder(string name, DateTime time)
         {
             this.name = name;
             this.mTime = time;
         }
+
+        public void TrimOrders()
+        {
+            foreach (PriceOrders po in mBuyPriceOrders.Values)
+            {
+                foreach (OrderSeq os in po.mOrderSeqs)
+                {
+                    this.mAllBuyOrders.Add(os);
+                }
+            }
+            foreach (PriceOrders po in mSellPriceOrders.Values)
+            {
+                foreach (OrderSeq os in po.mOrderSeqs)
+                {
+                    this.mAllSellOrders.Add(os);
+                }
+            }
+            this.mAllBuyOrders.Sort(new OrderTimeCompair());
+            
+            this.mAllSellOrders.Sort(new OrderTimeCompair());
+        }
+
+        
 
         public Boolean AppendOneLine(string[] datas)
         {
@@ -66,7 +147,27 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-
+        void CalculateBuyAverage()
+        {
+            double sum = 0;
+            long count = 0;
+            foreach (string key in foundBuyOrders.Keys)
+            {
+                double sum2 = 0;
+                long count2 = 0;
+                List<long> sample = Toolbox.ParseKeys(key);
+                foreach (long l in sample)
+                {
+                    sum2 += foundBuyOrders[key][0].mPrice * l;
+                    count2 += l;
+                }
+                count2 *= foundBuyOrders[key].Count;
+                count += count2;
+                sum2 *= foundBuyOrders[key].Count;
+                sum += sum2;
+            }
+            this.mBuySplitAvePrice = sum / count;
+        }
 
         public void FoundSellTractorOrders()
         {
@@ -138,7 +239,8 @@ namespace WindowsFormsApplication1
                                     this.mTractorOrders.Add(seq_name, new List<OrderSeq>());
                                 }
                                 this.mTractorOrders[seq_name].Add(os);
-                                this.mScore += sub.Count / 2;
+                                //this.mScore += sub.Count / 2;
+                                //this.mScore += 1;
                                 found = true;
                                 break;
                             }
@@ -180,7 +282,8 @@ namespace WindowsFormsApplication1
                                 }
                                 this.mBuySplits[seq_name].Add(os);
 
-                                this.mScore += sub.Count/2;
+                                //this.mScore += sub.Count/2;
+                                //this.mScore += 1;
 
                                 found = true;
                                 break;
@@ -336,11 +439,165 @@ namespace WindowsFormsApplication1
                 }
             }
         }
+        public void findsell2()
+        {
+            if (EnvVar.PrintAllStockOrders)
+            {
+                StreamWriter sw = new StreamWriter(this.name + "_Sell.txt");
+
+                foreach (OrderSeq os in mAllSellOrders)
+                {
+                    sw.Write("price:" + os.mPrice.ToString() + "  Time:" + os.mTime + " order:");
+                    foreach (long l in os.mSeqs)
+                    {
+                        sw.Write(l.ToString());
+                        sw.Write("|");
+                    }
+                    sw.WriteLine("");
+                }
+                
+                sw.WriteLine("");
+                sw.Close();
+            }
+
+            int p0 = 0;
+            for (p0 = 0; p0 < mAllSellOrders.Count; p0++)
+            {
+                OrderSeq os = mAllSellOrders[p0];
+                if (os.Mark)
+                    continue;
+                List<long> sample;
+                foreach (int len in EnvVar.SplitOrderNum)
+                {
+                    if (os.mSeqs.Count >= len)
+                    {
+                        for (int i = 0; i <= os.mSeqs.Count - len; i++)
+                        {
+                            sample = os.mSeqs.GetRange(i, len);
+                            if (!Toolbox.isValueOrders(sample, os.mPrice))
+                                continue;
+                            for (int p1 = p0 + 1; p1 < mAllSellOrders.Count; p1++)
+                            {
+                                OrderSeq mos = mAllSellOrders[p1];
+                                if (mos.Mark)
+                                    continue;
+                                //if (mos.mPrice == os.mPrice)
+                                //    continue;
+                                if (Toolbox.SeqContains(mos.mSeqs, sample) >= 0)
+                                {
+                                    //Debug.WriteLine("found " + Toolbox.GenerateSampleName(sample));
+                                    os.Mark = true;
+                                    mos.Mark = true;
+                                    string sname = Toolbox.GenerateSampleName(sample);
+                                    if (!foundSellOrders.Keys.Contains(sname))
+                                    {
+                                        foundSellOrders.Add(sname, new List<OrderSeq>());
+                                        foundSellOrders[sname].Add(os);
+
+                                    }
+                                    foundSellOrders[sname].Add(mos);
+                                    //if (this.name == "600153")
+                                    //  Debug.WriteLine("test");
+                                    //if (sample.Sum() % 10000 == 0 || sample.Sum() % 10000 == 1 || sample.Sum() % 10000 == 9)
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void findbuy2()
+        {
+            if (EnvVar.PrintAllStockOrders)
+            {
+                StreamWriter sw = new StreamWriter(this.name + ".txt");
+
+
+                foreach (OrderSeq os in mAllBuyOrders)
+                {
+                    sw.Write("price:" + os.mPrice.ToString() + "  Time:" + os.mTime + " order:");
+                    foreach (long l in os.mSeqs)
+                    {
+                        sw.Write(l.ToString());
+                        sw.Write("|");
+                    }
+                    sw.WriteLine("");
+                }
+                
+                sw.WriteLine("");
+                sw.Close();
+            }
+
+            int p0 = 0;
+            for (p0 = 0; p0 < mAllBuyOrders.Count; p0++)
+            {
+                OrderSeq os = mAllBuyOrders[p0];
+                if (os.Mark)
+                    continue;
+                List<long> sample;
+                foreach (int len in EnvVar.SplitOrderNum)
+                {
+                    if (os.mSeqs.Count >= len)
+                    {
+                        for (int i = 0; i <= os.mSeqs.Count - len; i++)
+                        {
+                            sample = os.mSeqs.GetRange(i, len);
+                            if (!Toolbox.isValueOrders(sample, os.mPrice))
+                                continue;
+                            for (int p1 = p0 + 1; p1 < mAllBuyOrders.Count; p1++)
+                            {
+                                OrderSeq mos = mAllBuyOrders[p1];
+                                if (mos.Mark)
+                                    continue;
+                                //if (mos.mPrice == os.mPrice)
+                                //    continue;
+                                if (Toolbox.SeqContains(mos.mSeqs, sample) >= 0)
+                                {
+                                    //Debug.WriteLine("found " + Toolbox.GenerateSampleName(sample));
+                                    os.Mark = true;
+                                    mos.Mark = true;
+                                    string sname = Toolbox.GenerateSampleName(sample);
+                                    if (!foundBuyOrders.Keys.Contains(sname))
+                                    {
+                                        foundBuyOrders.Add(sname, new List<OrderSeq>());
+                                        foundBuyOrders[sname].Add(os);
+
+                                    }
+                                    foundBuyOrders[sname].Add(mos);
+                                    //if (this.name == "600153")
+                                    //  Debug.WriteLine("test");
+                                    //if (sample.Sum() % 10000 == 0 || sample.Sum() % 10000 == 1 || sample.Sum() % 10000 == 9)
+                                    if (Toolbox.RankOrder(sample) >=3)
+                                    {
+                                        //this.mScore += sample.Count * 3 / 2;
+                                        this.mScore += 2;
+                                    }
+                                    //else if (sample.Sum() % 1000 == 0 || sample.Sum() % 1000 == 1 || sample.Sum() % 1000 == 9)
+                                    else if (Toolbox.RankOrder(sample) == 2)
+                                    {
+                                        //this.mScore += sample.Count;
+                                        this.mScore += 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            CalculateBuyAverage();
+            //if (this.mBuySplitAvePrice > this.getLastPrice())
+            //    this.mScore += 5;
+
+
+            //this.TrimGarbageOrder(false);
+        }
         public void FoundBuy()
         {
             List<float> orderKey = new List<float>();
             orderKey.AddRange(mBuyPriceOrders.Keys.ToArray());
-            orderKey.Sort();
+            //orderKey.Sort();
             if (EnvVar.PrintAllStockOrders)
             {
                 StreamWriter sw = new StreamWriter(this.name + ".txt");
@@ -394,8 +651,10 @@ namespace WindowsFormsApplication1
                                     //foreach (OrderSeq mos in .mOrderSeqs)
                                     {
                                         OrderSeq mos = morderseq[mosi];
-                                        if (os.mTime == "10:39:09.000" && mos.mTime == "10:40:39.000" && sample.Count == 3)
+                                        if (os.mTime == "09:39:09.000" && sample.Count == 2)
                                             Debug.WriteLine("test");
+                                        //if (sample[0] == 8300 && sample[1] == 11700 && mos.mTime == "10:11:06.000")
+                                         //   Debug.WriteLine("test");
                                         if (mos.mTime == os.mTime)
                                             continue;
                                         if (Toolbox.SeqContains(mos.mSeqs, sample) >=0)
@@ -415,17 +674,19 @@ namespace WindowsFormsApplication1
                                             }
                                             mos.chooseLevel = sample.Count;
                                             foundBuyOrders[sname].Add(mos);
-                                            if (this.name == "601398")
-                                                Debug.WriteLine("test");
-                                            if (sample.Sum() % 1000 == 0 || sample.Sum() % 1000 == 1 || sample.Sum() % 1000 == 9)
+                                            //if (this.name == "600153")
+                                              //  Debug.WriteLine("test");
+                                            if (sample.Sum() % 10000 == 0 || sample.Sum() % 10000 == 1 || sample.Sum() % 10000 == 9)
                                             {
-                                                this.mScore += sample.Count * 3 / 2;
+                                                //this.mScore += sample.Count * 3 / 2;
+                                                this.mScore += 2;
                                             }
-                                            else if (sample.Sum() % 100 == 0 || sample.Sum() % 100 == 1 || sample.Sum() % 100 == 9)
+                                            else if (sample.Sum() % 1000 == 0 || sample.Sum() % 1000 == 1 || sample.Sum() % 1000 == 9)
                                             {
-                                                this.mScore += sample.Count;
+                                                //this.mScore += sample.Count;
+                                                this.mScore += 1;
                                             }
-                                            this.mScore += sample.Count;
+                                            //this.mScore += 1;
                                         }
 
                                     }
