@@ -117,6 +117,7 @@ namespace WindowsFormsApplication1
 
                         //This break is the BUG. but keep it first.
                         //break;
+
                         if (count >= 2)
                             break;
                         else
@@ -134,7 +135,15 @@ namespace WindowsFormsApplication1
                     if (i11 > i1)
                         break;
                 }
-
+                if (min_len == 2)
+                {
+                    if (count != 0)
+                    {
+                        target_index = i1;
+                        break;
+                    }
+                }
+                else
                 if (count >= 2 || count >= min_len)  //The two need to think think
                 {
                     target_index = i1;

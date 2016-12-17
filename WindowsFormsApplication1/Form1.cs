@@ -9,6 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+using NiceJson;
+
 
 namespace WindowsFormsApplication1
 {
@@ -30,14 +33,37 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             initBlackList();
+
+            textBox2.Text = DateTime.Today.ToString("yyyy-MM-dd");
         }
         List<StockOrder> goodStock = new List<StockOrder>();
 
+
+        private void updateHistory()
+        {
+            DataBase db = new DataBase();
+            foreach (StockOrder stock in goodStock)
+            { 
+                for (int i = 1; i<5;i++)
+                {
+                    string date = Toolbox.foundDaysAgo(i).ToString("yyyy-MM-dd");
+                    StockOrder so = db.GetBydate(stock.name, date);
+                    if (so != null)
+                    {
+                        so.CalculateBuyAverage();
+                        stock.mHistory.Add(so);
+                    }
+                }
+            }
+        }
+
         private void outputGoodStock(StreamWriter sw, StreamWriter sw_sell, StreamWriter sw_rich)
         {
+
             
-            goodStock.Sort(new StockScoreCompair());
-            goodStock.Reverse();
+            //OutputResult output = new OutputResult(goodStock);
+            //output.OutputBuys("test2.html");
+            //return;
             //goodStock.Sort(new StockNameCompair());
             foreach (StockOrder stock in goodStock)
             {
@@ -63,7 +89,11 @@ namespace WindowsFormsApplication1
                             sw.WriteLine(">>>>>>>>>>>>>Main force Trapped :)");
                             sw_rich.WriteLine(">>>>>>>>>>>>>>Main force Trapped :)");
                         }
-
+                        if (stock.mHistory.Count != 0)
+                        {
+                            sw.WriteLine("★★★★★ history:" + stock.mHistory.Count.ToString());
+                            sw_rich.WriteLine("★★★★★ history:" + stock.mHistory.Count.ToString());
+                        }
                         sw_rich.WriteLine("===============");
                         sw_rich.WriteLine("stock name=" + stock.name + "  Score=" + stock.mScore.ToString());
                         printHead = true;
@@ -149,6 +179,15 @@ namespace WindowsFormsApplication1
             string[] exact_stock = textBox1.Lines;
             mExactStocks.Clear();
             mExactStocks.AddRange(exact_stock);
+     
+            
+            DateTime start = DateTime.Now;
+            OpenFileDialog of = new OpenFileDialog();
+            DialogResult result = of.ShowDialog();
+            if (result != System.Windows.Forms.DialogResult.OK)
+                return;
+
+            rework:
             if (mExactStocks.Count > 0)
             {
                 Limits.Exact = true;
@@ -159,12 +198,9 @@ namespace WindowsFormsApplication1
                 Limits.Exact = false;
                 EnvVar.PrintAllStockOrders = false;
             }
-            
-            DateTime start = DateTime.Now;
-            OpenFileDialog of = new OpenFileDialog();
-            DialogResult result = of.ShowDialog();
-            if (result != System.Windows.Forms.DialogResult.OK)
-                return;
+
+            this.goodStock = new List<StockOrder>();
+
             string out_filename = DateTime.Today.ToString("MM-dd-") + DateTime.Now.ToFileTimeUtc() + ".txt";
             StreamWriter sw = new StreamWriter(out_filename);
             StreamWriter sw_sell = new StreamWriter("SELL_" + out_filename);
@@ -180,7 +216,27 @@ namespace WindowsFormsApplication1
                 GC.Collect();
 
             }
+            MultipleWork work = new MultipleWork(goodStock);
+            work.go();
+            SpecialInfo spinfo = new SpecialInfo();
+
+            this.updateHistory();
+            Toolbox.CalculateStocksScores(goodStock, spinfo);
+            goodStock.Sort(new StockScoreCompair());
+            goodStock.Reverse();
+
+            if (checkBox1.Checked)
+            {
+                checkBox1.Checked = false;
+                foreach (StockOrder stock in goodStock)
+                {
+                    mExactStocks.Add(stock.name);
+                }
+                goto rework;
+            }
+
             outputGoodStock(sw, sw_sell, sw_rich);
+            OutputResult.DoOutputWork(goodStock);
             sw.Close();
             sw_sell.Close();
             sw_rich.Close();
@@ -238,14 +294,25 @@ namespace WindowsFormsApplication1
             
             foreach (StockOrder stock in stocks.Values)
             {
-                if (mBlackList.Contains(stock.name))
-                    continue;
-                //stock.FoundBuy();
-                stock.FoundBuySplitSingle();
-                stock.FoundTractorsOrders();
-                stock.TrimOrders();
-                stock.findbuy2();
-                stock.TrimGarbageOrder(Limits.Exact);
+                try
+                {
+                    //if (mBlackList.Contains(stock.name))
+                    //    continue;
+                    //stock.FoundBuy();
+                    stock.TrimOrders();
+                    stock.FoundTractorsOrders();
+                    stock.findbuy2();
+                    stock.FoundBuySplitSingle();
+                    
+                    
+                    
+                    stock.TrimSameFoundBuy();
+                    stock.TrimGarbageOrder(Limits.Exact);
+                }
+                catch (Exception err)
+                {
+ 
+                }
                 if (stock.foundBuyOrders.Count != 0 || stock.mTractorOrders.Count != 0 || stock.mBuySplits.Count != 0)
                 {
                     Boolean printHead = false;
@@ -452,6 +519,25 @@ namespace WindowsFormsApplication1
 
         private void button2_Click(object sender, EventArgs e)
         {
+            //JSON.Load()
+
+            WebRequest req = new WebRequest();
+            JsonArray jarry = new JsonArray();
+            JsonObject jobj = (JsonObject) JsonNode.ParseJsonString(req.GetTencentDailyJason("600421"));
+
+           
+
+            return;
+            SpecialInfo spinfo = new SpecialInfo();
+            return;
+            //OutputResult o = new OutputResult();
+            MDataBase mongo = new MDataBase();
+            return;
+            WebRequest web = new WebRequest();
+            StockOrder sstock = new StockOrder("002043", new DateTime());
+            web.FillStock(sstock);
+
+            Toolbox.foundDaysAgo(5);
 
             OpenFileDialog of = new OpenFileDialog();
             of.ShowDialog();
@@ -518,6 +604,115 @@ namespace WindowsFormsApplication1
 
             
 
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            //try
+            //{
+            //    MySqlConnection connection = new MySqlConnection("Data Source=localhost;Persist Security Info=yes;UserId=root; PWD=godset;");
+            //    connection.Open();
+            //    MySqlCommand cmdopen = new MySqlCommand("use test;", connection);
+            //    cmdopen.ExecuteReader().Close(); ;
+            //    MySqlCommand cmd = new MySqlCommand("select * from tabletest2;", connection);
+            //    MySqlDataReader reader = cmd.ExecuteReader();
+            //    while (reader.Read())
+            //    { 
+
+            //    }
+            //}
+            //catch (Exception err)
+            //{
+ 
+            //}
+            DataBase db = new DataBase();
+            //db.InsertOneStock(goodStock[0],"2016-07-24");
+            //db.GetBydate("002766", "2016-07-24");
+            db.UpdateGoodStocks(goodStock, textBox2.Text);
+
+
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox_spEN_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox cb = (CheckBox)sender;
+            if (cb.Checked)
+            {
+                try
+                {
+                    EnvVar.Special_day_num = Convert.ToInt32(textBox_spN.Text);
+                    EnvVar.SP_Threshold_wave = Convert.ToSingle(textBox_spW.Text);
+                    EnvVar.SP_Threadhold_drop = Convert.ToSingle(textBox_spD.Text);
+                    EnvVar.SP_Threshold_trap = Convert.ToSingle(textBox_spT.Text);
+
+                }
+                catch (Exception err)
+                {
+                    cb.Checked = false;
+                    EnvVar.SP_Daily_Check = false;
+                }
+
+                EnvVar.SP_Daily_Check = true;
+            }
+            else
+            {
+                EnvVar.SP_Daily_Check = false;
+            }
+        }
+
+        private void button_SP_Click(object sender, EventArgs e)
+        {
+            CheckBox cb = this.checkBox_spEN;
+            if (cb.Checked)
+            {
+                try
+                {
+                    EnvVar.Special_day_num = Convert.ToInt32(textBox_spN.Text) + 1;
+                    EnvVar.SP_Threshold_wave = Convert.ToInt32(textBox_spW.Text);
+                    EnvVar.SP_Threadhold_drop = Convert.ToInt32(textBox_spD.Text);
+                    EnvVar.SP_Threshold_trap = Convert.ToInt32(textBox_spT.Text);
+
+                }
+                catch (Exception err)
+                {
+                    cb.Checked = false;
+                    EnvVar.SP_Daily_Check = false;
+                }
+
+                EnvVar.SP_Daily_Check = true;
+            }
+            else
+            {
+                EnvVar.SP_Daily_Check = false;
+            }
+            if (goodStock.Count == 0 || EnvVar.SP_Daily_Check == false)
+                return;
+            MultipleWork work = new MultipleWork(goodStock);
+            work.go();
+            SpecialInfo spinfo = new SpecialInfo();
+
+            //this.updateHistory();
+            Toolbox.CalculateStocksScores(goodStock, spinfo);
+            goodStock.Sort(new StockScoreCompair());
+            goodStock.Reverse();
+            OutputResult.DoOutputWork(goodStock);
+
+        }
+
+        private void textBox_SP_Enter(object sender, EventArgs e)
+        {
+            try
+            {
+                TextBox textbox = (TextBox)sender;
+                textbox.SelectAll();
+            }
+            catch (Exception err)
+            { }
         }
     }
 }

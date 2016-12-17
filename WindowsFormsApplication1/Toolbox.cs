@@ -31,12 +31,18 @@ namespace WindowsFormsApplication1
 
         public int Compare(StockOrder x, StockOrder y)
         {
-            if (x.mScore == y.mScore)
-                return 0;
-            if (x.mScore > y.mScore)
-                return 1;
-            if (x.mScore < y.mScore)
-                return -1;
+            try
+            {
+                //if (x.TrapPercent() == 0 && y.TrapPercent() >= 0)
+                //    return -1;
+                if (x.mScore == y.mScore)
+                    return 0;
+                if (x.mScore > y.mScore)
+                    return 1;
+                if (x.mScore < y.mScore)
+                    return -1;
+            }
+            catch { }
 
             return 0;
         }
@@ -68,6 +74,26 @@ namespace WindowsFormsApplication1
         public Toolbox()
         { }
 
+        public static string formFullCode (string name)
+        {
+            if (name == null)
+                return null;
+            if (name[0] == '6')
+                return "sh" + name;
+            else
+                return "sz" + name;
+        }
+
+        public static Boolean isSwapPair(string k0, string k1)
+        {
+            List<long> kl0 = Toolbox.ParseKeys(k0);
+            List<long> kl1 = Toolbox.ParseKeys(k1);
+            if (kl0.Count != 2 || kl1.Count != 2)
+                return false;
+            if (Toolbox.SeqContains2(kl0, kl1) >= 0)
+                return true;
+            return false;
+        }
 
         public static int GetFallBackNums(int seq_order_nums)
         {
@@ -176,6 +202,14 @@ namespace WindowsFormsApplication1
                 sb.Append("_");
             }
             return sb.ToString();
+        }
+
+        public static void CalculateStocksScores(List<StockOrder> list, SpecialInfo spinfo=null)
+        {
+            foreach (StockOrder stock in list)
+            {
+                stock.CalculateScore(spinfo);
+            }
         }
 
         public static Boolean GetStockCode(string data, out string code,DataType type)
@@ -333,7 +367,7 @@ namespace WindowsFormsApplication1
             if (total < Limits.BigOrderValue())
                 return false;
 
-            
+            float intege_count = 0;
             if (EnvVar.OddSplitOrdersCheck && oddCheck)
             {
                 Boolean ret = false;
@@ -341,7 +375,12 @@ namespace WindowsFormsApplication1
                 {
                     if (l % 1000 != 0)
                         ret = true;
+                    else
+                        intege_count += 1;
                 }
+                float intege_rate = intege_count / Convert.ToSingle(orders.Count);
+                if (intege_rate >= 0.5)
+                    ret = false;
                 return ret;
             }
 
@@ -414,10 +453,30 @@ namespace WindowsFormsApplication1
             return true;
 
         }
+        public static DateTime foundDaysAgo(int ago)
+        {
+            DateTime now = DateTime.Now;
+            
+            while (ago != 0)
+            {
+                now = now.AddDays(-1);
+                if (now.DayOfWeek != DayOfWeek.Sunday && now.DayOfWeek != DayOfWeek.Saturday)
+                {
+                    ago--;
+                }
+            }
+            return now;
+        }
     }
 
     public class EnvVar
     {
+
+        public static Boolean SP_Daily_Check = false;
+        public static int Special_day_num = 3; // N value
+        public static float SP_Threshold_wave = 15; //W Value
+        public static float SP_Threshold_trap = 1; //T Value
+        public static float SP_Threadhold_drop = 5; //D Value
         public static long OrderSplitMinNum = 7000;
         public static long OrderSplitMinNum_exact = 3500;
 
@@ -432,7 +491,7 @@ namespace WindowsFormsApplication1
         public static int[] SplitOrderNum = { 5,4,3,2};
         public static int TCP_TIME_LEN = 12;
         public static string[] CodeInitial = { "60", "30", "00", "15", "51" };
-        public static string[] MultipleThreadInit = { "000", "002", "300", "600", "601", "603" };
+        public static string[] MultipleThreadInit = { "000", "002", "300", "600", "601", "603", "15" };
 
         public static int SplitOrdersMin = 3;
         public static int SplitOrderMax = 12;
