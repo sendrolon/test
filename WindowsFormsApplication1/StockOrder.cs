@@ -48,7 +48,9 @@ namespace WindowsFormsApplication1
         public List<StockOrder> mHistory = new List<StockOrder>();
 
         public double mBuySplitAvePrice = 0;
+        public double mSellSplitAvePrice = 0;
         public long mTotalMainForceBuy = 0;
+        public long mTotalMainForceSell = 0;
         public float lastPrice = 0;
         public List<MarketDay> mMarketDays = new List<MarketDay>();
 
@@ -57,6 +59,75 @@ namespace WindowsFormsApplication1
         public float mSP_TrapPercent = 0;
         public float mSP_MiddlePrice = 0;
         public Boolean mSP_flag = false;
+
+
+        public string GetSellOrderTitles()
+        {
+            string enter = "<br/>";
+            StringBuilder sb = new StringBuilder();
+            foreach (string key in foundSellOrders.Keys)
+            {
+                sb.Append("Serial:" + key + enter);
+                foreach (OrderSeq os in foundSellOrders[key])
+                {
+                    sb.Append(os.mTime.Substring(0, 8) + "   " + os.mPrice.ToString() + enter);
+                }
+                sb.Append(enter);
+            }
+            foreach (string key in mSellSplits.Keys)
+            {
+                sb.Append("Splits:" + key + enter);
+                foreach (OrderSeq os in mSellSplits[key])
+                {
+                    sb.Append(os.mTime.Substring(0, 8) + "   " + os.mPrice.ToString() + enter);
+                }
+                sb.Append(enter);
+            }
+            foreach (string key in mSellTractorOrders.Keys)
+            {
+                sb.Append("Tractors:" + key + enter);
+                foreach (OrderSeq os in mSellTractorOrders[key])
+                {
+                    sb.Append(os.mTime.Substring(0, 8) + "   " + os.mPrice.ToString() + enter);
+                }
+                sb.Append(enter);
+            }
+            return sb.ToString();
+        }
+
+        public string GetBuyOrderTitles()
+        {
+            string enter = "<br/>";
+            StringBuilder sb = new StringBuilder();
+            foreach (string key in foundBuyOrders.Keys)
+            {
+                sb.Append("Serial:" + key + enter);
+                foreach (OrderSeq os in foundBuyOrders[key])
+                {
+                    sb.Append(os.mTime.Substring(0, 8) + "   " + os.mPrice.ToString() + enter);
+                }
+                sb.Append(enter);
+            }
+            foreach (string key in mBuySplits.Keys)
+            {
+                sb.Append("Splits:" + key + enter);
+                foreach (OrderSeq os in mBuySplits[key])
+                {
+                    sb.Append(os.mTime.Substring(0, 8) + "   " + os.mPrice.ToString() + enter);
+                }
+                sb.Append(enter);
+            }
+            foreach (string key in mTractorOrders.Keys)
+            {
+                sb.Append("Tractors:" + key + enter);
+                foreach (OrderSeq os in mTractorOrders[key])
+                {
+                    sb.Append(os.mTime.Substring(0, 8) + "   " + os.mPrice.ToString() + enter);
+                }
+                sb.Append(enter);
+            }
+            return sb.ToString();
+        }
 
 
         public double TrapPercent()
@@ -77,6 +148,7 @@ namespace WindowsFormsApplication1
             MainForcePercentage = Convert.ToSingle(Convert.ToDouble(mTotalMainForceBuy) / Convert.ToDouble(TodayVol));
             MainForcePercentage *= 100;
             this.CalculateBuyAverage();
+            this.CalculateSellAverage();
         }
 
         //public Boolean WorthOutput(Boolean isExact)
@@ -143,8 +215,10 @@ namespace WindowsFormsApplication1
             Dictionary<string, List<OrderSeq>> target;
             if (type == 1)
                 target = foundBuyOrders;
-            else
+            else if (type == 2)
                 target = mBuySplits;
+            else
+                target = mTractorOrders;
             if (!target.Keys.Contains(seq))
             {
                 target.Add(seq, new List<OrderSeq>());
@@ -196,11 +270,11 @@ namespace WindowsFormsApplication1
 
         public void TrimGarbageOrder(Boolean isExact)
         {
-            if (isExact)
-                return;
+            //if (isExact)
+            //    return;
             List<string> garbages = new List<string>();
-            if (name == "002376")
-                Debug.WriteLine("test");
+            //if (name == "002376")
+            //    Debug.WriteLine("test");
             foreach (string key in foundBuyOrders.Keys)
             {
                 if (foundBuyOrders[key].Count >= 4)
@@ -307,6 +381,64 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        public void CalculateSellAverage()
+        {
+            double sum = 0;
+            long count = 0;
+            foreach (string key in foundSellOrders.Keys)
+            {
+                double sum2 = 0;
+                long count2 = 0;
+                List<long> sample = Toolbox.ParseKeys(key);
+                foreach (long l in sample)
+                {
+                    sum2 += foundSellOrders[key][0].mPrice * l;
+                    count2 += l;
+                }
+                count2 *= foundSellOrders[key].Count;
+                count += count2;
+                sum2 *= foundSellOrders[key].Count;
+                sum += sum2;
+            }
+
+            foreach (string key in mSellSplits.Keys)
+            {
+                double sum2 = 0;
+                long count2 = 0;
+                List<long> sample = Toolbox.ParseKeys(key);
+                foreach (long l in sample)
+                {
+                    sum2 += mSellSplits[key][0].mPrice * l;
+                    count2 += l;
+                }
+                count2 *= mSellSplits[key].Count;
+                count += count2;
+                sum2 *= mSellSplits[key].Count;
+                sum += sum2;
+            }
+
+            foreach (string key in mSellTractorOrders.Keys)
+            {
+                double sum2 = 0;
+                long count2 = 0;
+                List<long> sample = Toolbox.ParseKeys(key);
+                foreach (long l in sample)
+                {
+                    sum2 += mSellTractorOrders[key][0].mPrice * l;
+                    count2 += l;
+                }
+                count2 *= mSellTractorOrders[key].Count;
+                count += (count2 * 4 / 5);
+                sum2 *= mSellTractorOrders[key].Count;
+                sum += (sum2 * 4 / 5);
+            }
+
+            this.mSellSplitAvePrice = sum / count;
+            this.mTotalMainForceSell = count;
+        }
+
+
+
         public void CalculateBuyAverage()
         {
             double sum = 0;
@@ -341,6 +473,22 @@ namespace WindowsFormsApplication1
                 count += count2;
                 sum2 *= mBuySplits[key].Count;
                 sum += sum2;
+            }
+
+            foreach (string key in mTractorOrders.Keys)
+            {
+                double sum2 = 0;
+                long count2 = 0;
+                List<long> sample = Toolbox.ParseKeys(key);
+                foreach (long l in sample)
+                {
+                    sum2 += mTractorOrders[key][0].mPrice * l;
+                    count2 += l;
+                }
+                count2 *= mTractorOrders[key].Count;
+                count += (count2 * 4 / 5);
+                sum2 *= mTractorOrders[key].Count;
+                sum += (sum2 * 4 / 5);
             }
 
             this.mBuySplitAvePrice = sum / count;
@@ -438,22 +586,47 @@ namespace WindowsFormsApplication1
             Boolean found = false;
             foreach (float key in mBuyPriceOrders.Keys)
             {
+                OrderSeq pre_os = null;
                 foreach (OrderSeq os in mBuyPriceOrders[key].mOrderSeqs)
                 {
+                    if (this.name == "300145")
+                    {
+                        if (os.mTime == "14:53:48.000")
+                            Debug.WriteLine("test2");
+                    }
                     found = false;
                     if (os.mSeqs.Count < EnvVar.SplitOrdersMin || os.mSeqs.Count > EnvVar.SplitOrderMax)
                     {
-                        continue;
+                        //continue;
+                        goto next;
                     }
                     if (os.Mark)
-                        continue;
+                        goto next;
+                        //continue;
                     for (int len = EnvVar.SplitOrdersMin; len <= os.mSeqs.Count; len++)
                     {
                         for (int i = 0; i <= (os.mSeqs.Count - len); i++)
                         {
                             List<long> sub = os.mSeqs.GetRange(i, len);
+
+                            if (pre_os != null)
+                            {
+                                if (Toolbox.JudgeSplitSeq_l2(os.mPrice, sub, pre_os.mTime, os.mTime))
+                                {
+                                    string seq_name = Toolbox.GenerateSampleName(sub);
+                                    if (!this.mBuySplits.Keys.Contains(seq_name))
+                                    {
+                                        this.mBuySplits.Add(seq_name, new List<OrderSeq>());
+                                    }
+                                    this.mBuySplits[seq_name].Add(os);
+                                    found = true;
+                                    break;
+                                }
+                            }
+
                             if (!Toolbox.isValueOrders(sub, os.mPrice))
-                                continue;
+                                goto next;
+                                //continue;
                             if (Toolbox.JudgeSplitSeq(sub))
                             {
                                 string seq_name = Toolbox.GenerateSampleName(sub);
@@ -468,13 +641,19 @@ namespace WindowsFormsApplication1
 
                                 found = true;
                                 break;
-                            }                            
+                            }
+                         
                         }
                         if (found)
                             break;
                     }
+                    next: 
+                    pre_os = os;
                     if (found)
                         continue;
+                    //if (pre_os == null)
+                   
+                    
 
                 }
             }
@@ -485,20 +664,41 @@ namespace WindowsFormsApplication1
             Boolean found = false;
             foreach (float key in mSellPriceOrders.Keys)
             {
+                OrderSeq pre_os = null;
                 foreach (OrderSeq os in mSellPriceOrders[key].mOrderSeqs)
                 {
                     found = false;
                     if (os.mSeqs.Count < EnvVar.SplitOrdersMin || os.mSeqs.Count > EnvVar.SplitOrderMax)
                     {
-                        continue;
+                        //continue;
+                        goto next;
                     }
                     for (int len = EnvVar.SplitOrdersMin; len <= os.mSeqs.Count; len++)
                     {
                         for (int i = 0; i <= (os.mSeqs.Count - len); i++)
                         {
                             List<long> sub = os.mSeqs.GetRange(i, len);
+
+                            if (pre_os != null)
+                            {
+                                if (Toolbox.JudgeSplitSeq_l2(os.mPrice, sub, pre_os.mTime, os.mTime))
+                                {
+                                    string seq_name = Toolbox.GenerateSampleName(sub);
+                                    if (!this.mSellSplits.Keys.Contains(seq_name))
+                                    {
+                                        this.mSellSplits.Add(seq_name, new List<OrderSeq>());
+                                    }
+                                    this.mSellSplits[seq_name].Add(os);
+                                    found = true;
+                                    //pre_os = os;
+                                    break;
+                                }
+                                //pre_os = os;
+                            }
+
                             if (!Toolbox.isValueOrders(sub, os.mPrice))
-                                continue;
+                                //continue;
+                                goto next;
                             if (Toolbox.JudgeSplitSeq(sub))
                             {
                                 string seq_name = Toolbox.GenerateSampleName(sub);
@@ -514,8 +714,12 @@ namespace WindowsFormsApplication1
                         if (found)
                             break;
                     }
+                    next:
+                    pre_os = os;
                     if (found)
                         continue;
+                    //if (pre_os == null)
+                        
 
                 }
             }

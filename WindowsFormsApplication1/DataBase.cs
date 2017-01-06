@@ -87,6 +87,21 @@ namespace WindowsFormsApplication1
                     ExecuteOneCommand(sb1.ToString());
                 }
             }
+            foreach (string key in stock.mTractorOrders.Keys)
+            {
+                foreach (OrderSeq os in stock.mTractorOrders[key])
+                {
+                    StringBuilder sb1 = new StringBuilder(sb0_temp);
+                    sb1.Replace("TIME", os.mTime.Substring(0, 8));
+                    if (key.Length >=64)
+                        sb1.Replace("SEQ", key.Substring(0, 64));
+                    else
+                        sb1.Replace("SEQ", key);
+                    sb1.Replace("PRICE", os.mPrice.ToString());
+                    sb1.Replace("TYPE", "3");
+                    ExecuteOneCommand(sb1.ToString());
+                }
+            }
 
             return true;
 
@@ -127,6 +142,8 @@ namespace WindowsFormsApplication1
                     stock = new StockOrder(name, reader.GetDateTime(1));                    
                 }
                 time = reader.GetString(2);
+                if (time.Length == 12)
+                    time = time.Substring(0, 8);
                 seq = reader.GetString(3);
                 price = reader.GetFloat(4);
                 type = reader.GetInt16(5);

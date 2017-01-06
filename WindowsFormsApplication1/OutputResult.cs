@@ -112,7 +112,7 @@ namespace WindowsFormsApplication1
             display_th.AddChild(display_table);
             HtmlTrElement display_table_tr = new HtmlTrElement();
             display_table.AddChild(display_table_tr);
-            display0.AddAttribute(new HtmlWidthAttribute("400px"));
+            display0.AddAttribute(new HtmlWidthAttribute("450px"));
             display_table_tr.AddChild(display0);
             display_table_tr.AddChild(display1);
 
@@ -170,6 +170,8 @@ namespace WindowsFormsApplication1
                     HtmlSpanElement sp = new HtmlSpanElement();
                     sp.WithInnerText(his_stock.mTime.ToString("MM-dd") + " " +
                         (his_stock.mTotalMainForceBuy / 100).ToString() + "手 " + his_stock.mBuySplitAvePrice.ToString("f3") + "元");
+                    HtmlTitleAttribute title = new HtmlTitleAttribute(his_stock.GetBuyOrderTitles());
+                    sp.AddAttribute(title);
                     h5.AddChild(sp);
                 }
             }
@@ -200,6 +202,7 @@ namespace WindowsFormsApplication1
 
             HtmlImgElement img = new HtmlImgElement();
             img = Tag.Image(url);
+            img.AddAttribute(new HtmlWidthAttribute("600px"));
             tr.AddChild(img);
             //tr.WithAttribute()
             //HtmlAttribute attr = new HtmlAttribute();
@@ -212,6 +215,7 @@ namespace WindowsFormsApplication1
 
             img = new HtmlImgElement();
             img = Tag.Image(url);
+            img.AddAttribute(new HtmlWidthAttribute("600px"));
             tr.AddChild(img);
             return tr;
 
@@ -357,13 +361,14 @@ namespace WindowsFormsApplication1
             HtmlSpanElement sp_wave = new HtmlSpanElement();
             HtmlSpanElement sp_score = new HtmlSpanElement();
             HtmlSpanElement sp_special = new HtmlSpanElement();
+            HtmlSpanElement sp_sell = new HtmlSpanElement();
             sp_name.SetInnerText(stock.name);
             sp_name.WithClass("green");
             sp_cname.SetInnerText(stock.CName);
-            if (Limits.Exact)
+            //if (Limits.Exact)
                 sp_totalBuy.SetInnerText("买入：" + ((stock.mTotalMainForceBuy) / 100).ToString() + "  @ " + stock.mBuySplitAvePrice.ToString("#.000") + "元");
-            else
-                sp_totalBuy.SetInnerText("买入："+ ((stock.mTotalMainForceBuy)/100).ToString());
+            //else
+            //    sp_totalBuy.SetInnerText("买入："+ ((stock.mTotalMainForceBuy)/100).ToString());
             //HtmlTitleAttribute title = new HtmlTitleAttribute("test");
             //sp_totalBuy.AddAttribute(title);
             
@@ -373,6 +378,7 @@ namespace WindowsFormsApplication1
             if (stock.MainForcePercentage >= 3.8)
                 sp_percent.WithClass("bold");
             sp_score.SetInnerText("S:" + stock.mScore.ToString());
+            //if (stock.foundSellOrders)
             sp_marketv.SetInnerText("流通市值：" + stock.MarketFloatValue.ToString("f3") + "亿");
             sp_wave.SetInnerText("振幅：" + stock.Wave.ToString("f4") + "%");
 
@@ -385,6 +391,17 @@ namespace WindowsFormsApplication1
             sp_special.WithClass("mainTrap");
             sp_special.SetInnerText(sb_special.ToString());
 
+            if (stock.mTotalMainForceSell >= 100)
+            {
+                sp_sell.SetInnerText("卖出：" + (stock.mTotalMainForceSell/100).ToString() + 
+                    "手 @ " + stock.mSellSplitAvePrice.ToString("f3") +"元");
+                sp_sell.WithClass("bold");
+                //HtmlTitleAttribute title = new HtmlTitleAttribute("test");
+                //sp_totalBuy.AddAttribute(title);
+                HtmlTitleAttribute title = new HtmlTitleAttribute(stock.GetSellOrderTitles());
+                sp_sell.AddAttribute(title);
+            }
+
             h5.AddChild(sp_name);
             h5.AddChild(sp_cname);
             h5.AddChild(sp_totalBuy);
@@ -395,6 +412,7 @@ namespace WindowsFormsApplication1
             h5.AddChild(sp_score);
             h5.AddChild(sp_trap);
             h5.AddChild(sp_special);
+            h5.AddChild(sp_sell);
 
             //if (stock.mHistory.Count != 0)
             //{

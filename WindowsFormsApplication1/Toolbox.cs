@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -109,6 +110,35 @@ namespace WindowsFormsApplication1
                 return true;
             else
                 return false;
+        }
+
+        public static Boolean JudgeSplitSeq_l2(float price, List<long> seq, string time0, string time1)
+        {
+
+
+            TimeSpan t0 = new TimeSpan(Convert.ToInt32(time0.Substring(0, 2)),
+                                        Convert.ToInt32(time0.Substring(3, 2)),
+                                        Convert.ToInt32(time0.Substring(6, 2)));
+            TimeSpan t1 = new TimeSpan(Convert.ToInt32(time1.Substring(0, 2)),
+                            Convert.ToInt32(time1.Substring(3, 2)),
+                            Convert.ToInt32(time1.Substring(6, 2)));
+
+            TimeSpan dt = t1 - t0;
+            if (dt.TotalSeconds <= 10)
+            {
+                foreach (long ord in seq)
+                {
+                    //long o = ord / 100;
+                    float tp = (float)ord * price;
+                    if (tp < EnvVar.BigOrder || ord % 1000 == 0)
+                        return false;
+                }
+                Debug.WriteLine("JudgeSplitSeq_l2 found!");
+                return true;
+            }
+            else
+                return false;
+
         }
 
         public static Boolean isCloseTime(string tstring0, string tsting1)
@@ -488,13 +518,13 @@ namespace WindowsFormsApplication1
 
         //public static long BigOrder = 1;
         //public static long SingleOrder = 1;
-        public static int[] SplitOrderNum = { 5,4,3,2};
+        public static int[] SplitOrderNum = {6,5,4,3,2};
         public static int TCP_TIME_LEN = 12;
         public static string[] CodeInitial = { "60", "30", "00", "15", "51" };
         public static string[] MultipleThreadInit = { "000", "002", "300", "600", "601", "603", "15" };
 
         public static int SplitOrdersMin = 3;
-        public static int SplitOrderMax = 12;
+        public static int SplitOrderMax = 18;
 
 
         public static Boolean PrintAllStockOrders = false;

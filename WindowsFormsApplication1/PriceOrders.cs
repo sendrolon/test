@@ -19,8 +19,8 @@ namespace WindowsFormsApplication1
 
         public Boolean AppendOrderSeq(OrderSeq seq)
         {
-            if (seq.mPrice == 20.54 && seq.direction == StockDirection.BUY)
-                Debug.WriteLine("test");
+            //if (seq.mPrice == 20.54 && seq.direction == StockDirection.BUY)
+            //    Debug.WriteLine("test");
             mOrdersOrigin.Add(seq);
             Merge(seq);
             
@@ -42,7 +42,8 @@ namespace WindowsFormsApplication1
             return merge;
         }
 
-
+        //TODO
+        //找最后一个的时候，在拼最长单时，需要判断下中间是不是有断开的，可以依据价格来判断
         OrderSeq FindLatestSeq(OrderSeq nseq)
         {
             if (mOrderSeqs.Count == 0)
@@ -72,8 +73,8 @@ namespace WindowsFormsApplication1
 
         void Merge(OrderSeq seq1)
         {
-            if (seq1.mTime == "09:59:12.000")
-                Debug.WriteLine("test");
+          //  if (seq1.mTime == "10:04:31.000")
+          //      Debug.WriteLine("test");
             if (mOrderSeqs.Count == 0)
             {
                 mOrderSeqs.Add(seq1);

@@ -232,6 +232,9 @@ namespace WindowsFormsApplication1
                 {
                     mExactStocks.Add(stock.name);
                 }
+                EnvVar.SingleOrder_exact = EnvVar.SingleOrder;
+                EnvVar.BigOrder_exact = EnvVar.BigOrder;
+                EnvVar.OrderSplitMinNum_exact = EnvVar.OrderSplitMinNum;
                 goto rework;
             }
 
@@ -247,7 +250,8 @@ namespace WindowsFormsApplication1
             MessageBox.Show("Completed! cost:" + (end - start).TotalSeconds.ToString());
         }
 
-        void doWork(string infilename, string initial, StreamWriter sw, StreamWriter sw_sell,StreamWriter sw_rich)
+        void doWork(string infilename, string initial, StreamWriter sw = null, StreamWriter sw_sell = null,
+            StreamWriter sw_rich= null)
         {
             Dictionary<string, StockOrder> stocks = new Dictionary<string, StockOrder>();
             StreamReader sr = new StreamReader(infilename);
@@ -426,6 +430,7 @@ namespace WindowsFormsApplication1
                     stock.findsell2();
                     if (stock.foundSellOrders.Count != 0)
                     {
+                        //continue;
                         Boolean printHead = false;
 
                         foreach (string key in stock.foundSellOrders.Keys)
@@ -524,7 +529,6 @@ namespace WindowsFormsApplication1
             WebRequest req = new WebRequest();
             JsonArray jarry = new JsonArray();
             JsonObject jobj = (JsonObject) JsonNode.ParseJsonString(req.GetTencentDailyJason("600421"));
-
            
 
             return;
