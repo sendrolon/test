@@ -1,0 +1,295 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D035770F-86D1-49E9-B228-D908F621110A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>HtmlGenerator</RootNamespace>
+    <AssemblyName>HtmlGenerator</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="HtmlGenerator">
+      <HintPath>..\..\WindowsFormsApplication1\HtmlGenerator.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attribute.cs" />
+    <Compile Include="Attributes\HtmlAcceptAttribute.cs" />
+    <Compile Include="Attributes\HtmlAcceptCharsetAttribute.cs" />
+    <Compile Include="Attributes\HtmlAccessKeyAttribute.cs" />
+    <Compile Include="Attributes\HtmlActionAttribute.cs" />
+    <Compile Include="Attributes\HtmlAllowFullScreenAttribute.cs" />
+    <Compile Include="Attributes\HtmlAltAttribute.cs" />
+    <Compile Include="Attributes\HtmlAsyncAttribute.cs" />
+    <Compile Include="Attributes\HtmlAutoCompleteAttribute.cs" />
+    <Compile Include="Attributes\HtmlAutoFocusAttribute.cs" />
+    <Compile Include="Attributes\HtmlAutoPlayAttribute.cs" />
+    <Compile Include="Attributes\HtmlAutoSaveAttribute.cs" />
+    <Compile Include="Attributes\HtmlCharsetAttribute.cs" />
+    <Compile Include="Attributes\HtmlCheckedAttribute.cs" />
+    <Compile Include="Attributes\HtmlCiteAttribute.cs" />
+    <Compile Include="Attributes\HtmlClassAttribute.cs" />
+    <Compile Include="Attributes\HtmlColorAttribute.cs" />
+    <Compile Include="Attributes\HtmlColsAttribute.cs" />
+    <Compile Include="Attributes\HtmlColSpanAttribute.cs" />
+    <Compile Include="Attributes\HtmlCommandAttribute.cs" />
+    <Compile Include="Attributes\HtmlCompactAttribute.cs" />
+    <Compile Include="Attributes\HtmlContentAttribute.cs" />
+    <Compile Include="Attributes\HtmlContentEditableAttribute.cs" />
+    <Compile Include="Attributes\HtmlContextMenuAttribute.cs" />
+    <Compile Include="Attributes\HtmlControlsAttribute.cs" />
+    <Compile Include="Attributes\HtmlCoordsAttribute.cs" />
+    <Compile Include="Attributes\HtmlCrossOriginAttribute.cs" />
+    <Compile Include="Attributes\HtmlDataAttribute.cs" />
+    <Compile Include="Attributes\HtmlDateTimeAttribute.cs" />
+    <Compile Include="Attributes\HtmlDefaultAttribute.cs" />
+    <Compile Include="Attributes\HtmlDefaultStyleAttribute.cs" />
+    <Compile Include="Attributes\HtmlDeferAttribute.cs" />
+    <Compile Include="Attributes\HtmlDirAttribute.cs" />
+    <Compile Include="Attributes\HtmlDisabledAttribute.cs" />
+    <Compile Include="Attributes\HtmlDownloadAttribute.cs" />
+    <Compile Include="Attributes\HtmlDraggableAttribute.cs" />
+    <Compile Include="Attributes\HtmlDropZoneAttribute.cs" />
+    <Compile Include="Attributes\HtmlEncTypeAttribute.cs" />
+    <Compile Include="Attributes\HtmlForAttribute.cs" />
+    <Compile Include="Attributes\HtmlFormActionAttribute.cs" />
+    <Compile Include="Attributes\HtmlFormAttribute.cs" />
+    <Compile Include="Attributes\HtmlFormEncTypeAttribute.cs" />
+    <Compile Include="Attributes\HtmlFormMethodAttribute.cs" />
+    <Compile Include="Attributes\HtmlFormNoValidateAttribute.cs" />
+    <Compile Include="Attributes\HtmlFormTargetAttribute.cs" />
+    <Compile Include="Attributes\HtmlHeadersAttribute.cs" />
+    <Compile Include="Attributes\HtmlHeightAttribute.cs" />
+    <Compile Include="Attributes\HtmlHiddenAttribute.cs" />
+    <Compile Include="Attributes\HtmlHighAttribute.cs" />
+    <Compile Include="Attributes\HtmlHrefAttribute.cs" />
+    <Compile Include="Attributes\HtmlHrefLangAttribute.cs" />
+    <Compile Include="Attributes\HtmlHttpEquivAttribute.cs" />
+    <Compile Include="Attributes\HtmlIconAttribute.cs" />
+    <Compile Include="Attributes\HtmlIdAttribute.cs" />
+    <Compile Include="Attributes\HtmlInputModeAttribute.cs" />
+    <Compile Include="Attributes\HtmlIntegrityAttribute.cs" />
+    <Compile Include="Attributes\HtmlIsMapAttribute.cs" />
+    <Compile Include="Attributes\HtmlKindAttribute.cs" />
+    <Compile Include="Attributes\HtmlLabelAttribute.cs" />
+    <Compile Include="Attributes\HtmlLangAttribute.cs" />
+    <Compile Include="Attributes\HtmlListAttribute.cs" />
+    <Compile Include="Attributes\HtmlLongDescAttribute.cs" />
+    <Compile Include="Attributes\HtmlLoopAttribute.cs" />
+    <Compile Include="Attributes\HtmlLowAttribute.cs" />
+    <Compile Include="Attributes\HtmlMaxAttribute.cs" />
+    <Compile Include="Attributes\HtmlMaxLengthAttribute.cs" />
+    <Compile Include="Attributes\HtmlMediaAttribute.cs" />
+    <Compile Include="Attributes\HtmlMethodAttribute.cs" />
+    <Compile Include="Attributes\HtmlMinAttribute.cs" />
+    <Compile Include="Attributes\HtmlMinLengthAttribute.cs" />
+    <Compile Include="Attributes\HtmlMultipleAttribute.cs" />
+    <Compile Include="Attributes\HtmlMutedAttribute.cs" />
+    <Compile Include="Attributes\HtmlNameAttribute.cs" />
+    <Compile Include="Attributes\HtmlNoValidateAttribute.cs" />
+    <Compile Include="Attributes\HtmlNoWrapAttribute.cs" />
+    <Compile Include="Attributes\HtmlOpenAttribute.cs" />
+    <Compile Include="Attributes\HtmlOptimumAttribute.cs" />
+    <Compile Include="Attributes\HtmlPatternAttribute.cs" />
+    <Compile Include="Attributes\HtmlPingAttribute.cs" />
+    <Compile Include="Attributes\HtmlPlaceholderAttribute.cs" />
+    <Compile Include="Attributes\HtmlPosterAttribute.cs" />
+    <Compile Include="Attributes\HtmlPreloadAttribute.cs" />
+    <Compile Include="Attributes\HtmlRadioGroupAttribute.cs" />
+    <Compile Include="Attributes\HtmlReadonlyAttribute.cs" />
+    <Compile Include="Attributes\HtmlRefreshAttribute.cs" />
+    <Compile Include="Attributes\HtmlRelAttribute.cs" />
+    <Compile Include="Attributes\HtmlRequiredAttribute.cs" />
+    <Compile Include="Attributes\HtmlReversedAttribute.cs" />
+    <Compile Include="Attributes\HtmlRowsAttribute.cs" />
+    <Compile Include="Attributes\HtmlRowSpanAttribute.cs" />
+    <Compile Include="Attributes\HtmlSandboxAttribute.cs" />
+    <Compile Include="Attributes\HtmlScopeAttribute.cs" />
+    <Compile Include="Attributes\HtmlScopedAttribute.cs" />
+    <Compile Include="Attributes\HtmlSeamlessAttribute.cs" />
+    <Compile Include="Attributes\HtmlSelectedAttribute.cs" />
+    <Compile Include="Attributes\HtmlSelectionDirectionAttribute.cs" />
+    <Compile Include="Attributes\HtmlShapeAttribute.cs" />
+    <Compile Include="Attributes\HtmlSizeAttribute.cs" />
+    <Compile Include="Attributes\HtmlSizesAttribute.cs" />
+    <Compile Include="Attributes\HtmlSpanAttribute.cs" />
+    <Compile Include="Attributes\HtmlSpellCheckAttribute.cs" />
+    <Compile Include="Attributes\HtmlSrcAttribute.cs" />
+    <Compile Include="Attributes\HtmlSrcDocAttribute.cs" />
+    <Compile Include="Attributes\HtmlSrcLangAttribute.cs" />
+    <Compile Include="Attributes\HtmlSrcSetAttribute.cs" />
+    <Compile Include="Attributes\HtmlStartAttribute.cs" />
+    <Compile Include="Attributes\HtmlStepAttribute.cs" />
+    <Compile Include="Attributes\HtmlStyleAttribute.cs" />
+    <Compile Include="Attributes\HtmlTabIndexAttribute.cs" />
+    <Compile Include="Attributes\HtmlTargetAttribute.cs" />
+    <Compile Include="Attributes\HtmlTextAttribute.cs" />
+    <Compile Include="Attributes\HtmlTitleAttribute.cs" />
+    <Compile Include="Attributes\HtmlTranslateAttribute.cs" />
+    <Compile Include="Attributes\HtmlTypeAttribute.cs" />
+    <Compile Include="Attributes\HtmlTypeMustMatchAttribute.cs" />
+    <Compile Include="Attributes\HtmlUseMapAttribute.cs" />
+    <Compile Include="Attributes\HtmlValueAttribute.cs" />
+    <Compile Include="Attributes\HtmlVolumeAttribute.cs" />
+    <Compile Include="Attributes\HtmlWidthAttribute.cs" />
+    <Compile Include="Attributes\HtmlWrapAttribute.cs" />
+    <Compile Include="Attributes\HtmlXmlsAttribute.cs" />
+    <Compile Include="BaseAttribute.cs" />
+    <Compile Include="Demo.cs" />
+    <Compile Include="Elements\HtmlAbbrElement.cs" />
+    <Compile Include="Elements\HtmlAddressElement.cs" />
+    <Compile Include="Elements\HtmlAElement.cs" />
+    <Compile Include="Elements\HtmlAreaElement.cs" />
+    <Compile Include="Elements\HtmlArticleElement.cs" />
+    <Compile Include="Elements\HtmlAudioElement.cs" />
+    <Compile Include="Elements\HtmlBaseElement.cs" />
+    <Compile Include="Elements\HtmlBdiElement.cs" />
+    <Compile Include="Elements\HtmlBElement.cs" />
+    <Compile Include="Elements\HtmlBodyElement.cs" />
+    <Compile Include="Elements\HtmlBrElement.cs" />
+    <Compile Include="Elements\HtmlButtonElement.cs" />
+    <Compile Include="Elements\HtmlCanvasElement.cs" />
+    <Compile Include="Elements\HtmlCaptionElement.cs" />
+    <Compile Include="Elements\HtmlCiteElement.cs" />
+    <Compile Include="Elements\HtmlCodeElement.cs" />
+    <Compile Include="Elements\HtmlColElement.cs" />
+    <Compile Include="Elements\HtmlColgroupElement.cs" />
+    <Compile Include="Elements\HtmlDataElement.cs" />
+    <Compile Include="Elements\HtmlDatalistElement.cs" />
+    <Compile Include="Elements\HtmlDdElement.cs" />
+    <Compile Include="Elements\HtmlDelElement.cs" />
+    <Compile Include="Elements\HtmlDetailsElement.cs" />
+    <Compile Include="Elements\HtmlDfnElement.cs" />
+    <Compile Include="Elements\HtmlDialogElement.cs" />
+    <Compile Include="Elements\HtmlDivElement.cs" />
+    <Compile Include="Elements\HtmlDlElement.cs" />
+    <Compile Include="Elements\HtmlDtElement.cs" />
+    <Compile Include="Elements\HtmlEmbedElement.cs" />
+    <Compile Include="Elements\HtmlEmElement.cs" />
+    <Compile Include="Elements\HtmlFieldsetElement.cs" />
+    <Compile Include="Elements\HtmlFigCaptionElement.cs" />
+    <Compile Include="Elements\HtmlFigureElement.cs" />
+    <Compile Include="Elements\HtmlFooterElement.cs" />
+    <Compile Include="Elements\HtmlFormElement.cs" />
+    <Compile Include="Elements\HtmlH1Element.cs" />
+    <Compile Include="Elements\HtmlH2Element.cs" />
+    <Compile Include="Elements\HtmlH3Element.cs" />
+    <Compile Include="Elements\HtmlH4Element.cs" />
+    <Compile Include="Elements\HtmlH5Element.cs" />
+    <Compile Include="Elements\HtmlH6Element.cs" />
+    <Compile Include="Elements\HtmlHeadElement.cs" />
+    <Compile Include="Elements\HtmlHeaderElement.cs" />
+    <Compile Include="Elements\HtmlHrElement.cs" />
+    <Compile Include="Elements\HtmlHtmlElement.cs" />
+    <Compile Include="Elements\HtmlIElement.cs" />
+    <Compile Include="Elements\HtmlIframeElement.cs" />
+    <Compile Include="Elements\HtmlImgElement.cs" />
+    <Compile Include="Elements\HtmlInputElement.cs" />
+    <Compile Include="Elements\HtmlInsElement.cs" />
+    <Compile Include="Elements\HtmlKbdElement.cs" />
+    <Compile Include="Elements\HtmlLabelElement.cs" />
+    <Compile Include="Elements\HtmlLegendElement.cs" />
+    <Compile Include="Elements\HtmlLiElement.cs" />
+    <Compile Include="Elements\HtmlLinkElement.cs" />
+    <Compile Include="Elements\HtmlMainElement.cs" />
+    <Compile Include="Elements\HtmlMapElement.cs" />
+    <Compile Include="Elements\HtmlMarkElement.cs" />
+    <Compile Include="Elements\HtmlMenuElement.cs" />
+    <Compile Include="Elements\HtmlMenuItemElement.cs" />
+    <Compile Include="Elements\HtmlMetaElement.cs" />
+    <Compile Include="Elements\HtmlMeterElement.cs" />
+    <Compile Include="Elements\HtmlNavElement.cs" />
+    <Compile Include="Elements\HtmlNoscriptElement.cs" />
+    <Compile Include="Elements\HtmlObjectElement.cs" />
+    <Compile Include="Elements\HtmlOlElement.cs" />
+    <Compile Include="Elements\HtmlOptgroupElement.cs" />
+    <Compile Include="Elements\HtmlOptionElement.cs" />
+    <Compile Include="Elements\HtmlOutputElement.cs" />
+    <Compile Include="Elements\HtmlParamElement.cs" />
+    <Compile Include="Elements\HtmlPElement.cs" />
+    <Compile Include="Elements\HtmlPreElement.cs" />
+    <Compile Include="Elements\HtmlProgressElement.cs" />
+    <Compile Include="Elements\HtmlQElement.cs" />
+    <Compile Include="Elements\HtmlRpElement.cs" />
+    <Compile Include="Elements\HtmlRtcElement.cs" />
+    <Compile Include="Elements\HtmlRtElement.cs" />
+    <Compile Include="Elements\HtmlRubyElement.cs" />
+    <Compile Include="Elements\HtmlSampElement.cs" />
+    <Compile Include="Elements\HtmlScriptElement.cs" />
+    <Compile Include="Elements\HtmlSectionElement.cs" />
+    <Compile Include="Elements\HtmlSelectElement.cs" />
+    <Compile Include="Elements\HtmlSmallElement.cs" />
+    <Compile Include="Elements\HtmlSourceElement.cs" />
+    <Compile Include="Elements\HtmlSpanElement.cs" />
+    <Compile Include="Elements\HtmlStrongElement.cs" />
+    <Compile Include="Elements\HtmlStyleElement.cs" />
+    <Compile Include="Elements\HtmlSubElement.cs" />
+    <Compile Include="Elements\HtmlSummaryElement.cs" />
+    <Compile Include="Elements\HtmlSupElement.cs" />
+    <Compile Include="Elements\HtmlTableElement.cs" />
+    <Compile Include="Elements\HtmlTbodyElement.cs" />
+    <Compile Include="Elements\HtmlTdElement.cs" />
+    <Compile Include="Elements\HtmlTemplateElement.cs" />
+    <Compile Include="Elements\HtmlTextAreaElement.cs" />
+    <Compile Include="Elements\HtmlTfootElement.cs" />
+    <Compile Include="Elements\HtmlTheadElement.cs" />
+    <Compile Include="Elements\HtmlThElement.cs" />
+    <Compile Include="Elements\HtmlTimeElement.cs" />
+    <Compile Include="Elements\HtmlTitleElement.cs" />
+    <Compile Include="Elements\HtmlTrackElement.cs" />
+    <Compile Include="Elements\HtmlTrElement.cs" />
+    <Compile Include="Elements\HtmlUElement.cs" />
+    <Compile Include="Elements\HtmlUlElement.cs" />
+    <Compile Include="Elements\HtmlVarElement.cs" />
+    <Compile Include="Elements\HtmlVideoElement.cs" />
+    <Compile Include="Elements\HtmlWbrElement.cs" />
+    <Compile Include="HtmlAttribute.cs" />
+    <Compile Include="HtmlDocument.cs" />
+    <Compile Include="HtmlElement.cs" />
+    <Compile Include="HtmlSerializeType.cs" />
+    <Compile Include="Meta\AttributeInfo.cs" />
+    <Compile Include="Meta\ElementInfo.cs" />
+    <Compile Include="Meta\MetaAttributes.cs" />
+    <Compile Include="Meta\MetaElements.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpecialTag.cs" />
+    <Compile Include="Tag.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
